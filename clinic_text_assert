@@ -1,0 +1,249 @@
+import asyncio
+import os
+import re
+import pytest
+from playwright.async_api import async_playwright
+from Clinic_agg import common_operation
+from Clinic_agg.common_operation import dashboard_actual_result
+from tests_resources.files.expected_disclaimer_text import expected_texts,expected_text_english
+from tests_resources.files.dashboard_text_file import expected_dashboar_text
+from tests_resources.files.expected_terms_of_use_urls import expected_urls,expected_terms_text
+browsers = ["chromium", "firefox", "webkit"]
+platforms = ["mac", "windows", "All"]
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("all_browser", browsers)
+@pytest.mark.parametrize("language", ["English", "French", "Spanish", "Dutch", "German", "Italian"])
+@pytest.mark.xrayjira(test_key="CAD-467")
+@pytest.mark.xrayjira(test_key="CAD-383")
+@pytest.mark.xrayjira(test_key="CAD-598")
+async def test_disclaimer_all_languages(language, all_browser):
+    """
+    Verify that the system provides a Disclaimer & online safety recommendations
+    about the usage of the Clinic Summary Report
+    in all relevant languages before the user logs in
+    :param all_browser:Define with browser use for run the test
+    :param language:Define with language use for run the test
+    :return:True
+    """
+    async with async_playwright() as p:
+        # Given: login to the CareLink dashboard
+        if all_browser == "webkit":
+            viewport = {'width': 1280, 'height': 1024}
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000)
+            context = await browser.new_context(viewport=viewport, locale='nl-NL', timezone_id='Europe/Amsterdam',
+                                             ignore_https_errors=False)
+        else:
+            if all_browser in["firefox", "chromium"]:
+                args = ["--start-maximized","--kiosk"]
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000, args=args)
+            context = await browser.new_context(no_viewport=True, ignore_https_errors=False,)
+        page = await context.new_page()
+        await page.goto('https://stg-clinic-reports-dashboard.nutrino.co/')
+        await page.click("//*[@id='root']/div/div[1]/div[1]/div/div/div")
+        languages_dict = common_operation.languages()
+        xpath_selector = languages_dict.get(language)
+        # When: Click on the language selector
+        await page.click(xpath_selector, timeout=4000)
+        await page.wait_for_load_state("networkidle")
+        page_content = await page.content()
+        page_content_text = re.sub(r'<[^>]*>', '', page_content)
+        actual_text_normalized = re.sub(r'\s+', ' ', page_content_text).strip()
+        await asyncio.sleep(5)
+        expected_text = expected_texts.get(language)
+        expected_text_normalized = re.sub(r'\s+', ' ', expected_text).strip()
+        # Then: Verify that the expected text of Disclaimer & online safety
+        #             recommendations is identical as actual text
+        assert actual_text_normalized.strip() == expected_text_normalized.strip()
+        directory = os.path.join("screenshots", f"{all_browser}_{language.lower()}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "Disclaimer_screen.jpg"))
+
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("bro", browsers)
+@pytest.mark.xrayjira(test_key="CAD-230")
+async def test_careLink_proWeb_website(bro):
+    """
+    Verify that the CareLink proWeb website is open
+    :param bro: Define with browser use for run the test
+    :return: True
+    """
+    async with async_playwright() as p:
+        # Given: login to the CareLink aggregation dashboard
+        browser = await getattr(p, bro).launch(headless=False, slow_mo=1000, args=["--start-maximized", "--kiosk"])
+        page = await browser.new_page(no_viewport=True, ignore_https_errors=False)
+        await common_operation.login(page)
+        # When: Click on the CareLink system button
+        carelink_link = page.locator("//*[@id='root']/div/div[1]/div[4]/div/div[2]/button/span")
+        await carelink_link.click()
+        await asyncio.sleep(5)
+        context = browser.contexts[0]
+        pages = context.pages
+        new_page = pages[-1]
+        await asyncio.sleep(5)
+        expected_url = "https://carelink.medtronic.eu/login"
+        actual_url = new_page.url
+        # Then: Verify that the CareLink proWeb website is open
+        assert actual_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {actual_url}"
+        login_element = await new_page.query_selector("//*[@id='i-login-title']")
+        login_text = await new_page.evaluate('(element) => element.textContent', login_element)
+        assert "Log in to  CareLink™" in login_text
+        directory = os.path.join("CareLink_url", f"_{bro}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "car_screen.jpg"))
+    browsers.remove("firefox")
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("bro", browsers)
+@pytest.mark.xrayjira(test_key="CAD-270")
+async def test_new_domain_and_invalid_credentials(bro):
+    """
+    Verify user can perform login and domain "https://mdtlogin-stg.medtronic.com" displayed in the login page
+    and error message "Invalid username or password" displayed if username and password are invalid
+    :param bro:Define with browser use for run the test
+    :return: True if test pass
+    """
+    async with async_playwright() as p:
+        browser = await getattr(p, bro).launch(headless=False, slow_mo=1000, args=["--start-maximized", "--kiosk"])
+        page = await browser.new_page(no_viewport=True, ignore_https_errors=False)
+        await common_operation.login_logout(page)
+
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("language", ["English"])
+@pytest.mark.parametrize("bro", browsers)
+@pytest.mark.xrayjira(test_key="CAD-229")
+async def test_logout(bro,language):
+    """
+    Verify user can perform logout
+    :param bro:Define with browser use for run the test
+    :return: True if test pass
+    """
+    async with async_playwright() as p:
+        # Given: login  and logout from the CareLink aggregation dashboard
+        browser = await getattr(p, bro).launch(headless=False, slow_mo=1000, args=["--start-maximized", "--kiosk"])
+        page = await browser.new_page(no_viewport=True, ignore_https_errors=False)
+        await common_operation.logout(page)
+        await page.wait_for_load_state("networkidle")
+        # When: cconvert the actual and the expected text to the same without HTML tags and without whitespace
+        page_content = await page.content()
+        page_content_text = re.sub(r'<[^>]*>', '', page_content)
+        actual_text_normalized = re.sub(r'\s+', ' ', page_content_text).strip()
+        await asyncio.sleep(5)
+        expected_text = expected_text_english
+        expected_text_normalized = re.sub(r'\s+', ' ', expected_text).strip()
+        # Then: Verify that the user possible logout
+        assert actual_text_normalized.strip() == expected_text_normalized.strip()
+        directory = os.path.join("safety")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "safety.jpg"))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("all_browser", browsers)
+@pytest.mark.parametrize("language", ["English", "French", "Spanish", "Dutch", "German", "Italian"])
+@pytest.mark.xrayjira(test_key="CAD-469")
+@pytest.mark.xrayjira(test_key="CAD-381")
+@pytest.mark.xrayjira(test_key="CAD-227")
+@pytest.mark.xrayjira(test_key="CAD-637")
+@pytest.mark.xrayjira(test_key="CAD-596")
+async def test_dashboard_all_languages(language, all_browser):
+    """
+    Verify that the provided text is correct and compare it to the relevant reference in all languages
+    in all relevant languages before the user logs in
+    :param all_browser:Define with browser use for run the test
+    :param language:Define with language use for run the test
+    :return:True
+    """
+    async with async_playwright() as p:
+        # Given: login to the CareLink dashboard
+        if all_browser == "webkit":
+            viewport = {'width': 1280, 'height': 1024}
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000)
+            context = await browser.new_context(viewport=viewport,ignore_https_errors=False)
+        else:
+            if all_browser in["firefox", "chromium"]:
+                args = ["--start-maximized","--kiosk"]
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000, args=args)
+            context = await browser.new_context(no_viewport=True, ignore_https_errors=False,)
+        page = await context.new_page()
+        await page.goto('https://stg-clinic-reports-dashboard.nutrino.co/')
+        await common_operation.login(page)
+        await asyncio.sleep(5)
+        await page.click("//*[@id='root']/div/div[1]/div[1]/div/div/div")
+        languages_dict = common_operation.languages()
+        xpath_selector = languages_dict.get(language)
+        await page.click(xpath_selector, timeout=4000)
+        await page.wait_for_load_state("networkidle")
+        await asyncio.sleep(5)
+        page.locator("///*[@id='root']/div/div[1]")
+        actual_text_normalize = await dashboard_actual_result(page, language=language)
+        expected_text = expected_dashboar_text.get(language)
+        expected_text_normalized = re.sub(r'\s+', ' ', expected_text).strip()
+        # Then: Verify that the expected text of Disclaimer & online safety
+        #             recommendations is identical as actual text
+        assert actual_text_normalize == expected_text_normalized
+        directory = os.path.join("dashboard_text", f"{all_browser}_{language.lower()}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(full_page=True, path=os.path.join(directory, "dashboard_screen.jpg"))
+browsers.remove("firefox")
+browsers.remove("webkit")
+
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("all_browser", browsers)
+@pytest.mark.parametrize("language", ["English", "French", "Spanish", "Dutch", "German", "Italian"])
+@pytest.mark.xrayjira(test_key="CAD-471")
+@pytest.mark.xrayjira(test_key="CAD-597")
+@pytest.mark.xrayjira(test_key="CAD-404")
+async def test_terms_of_use_all_languages(language, all_browser):
+    """
+    Verify that the system provides a ״terms of use״ of the Clinic Summary Report in all relevant languages
+    :param all_browser:Define with browser use for run the test
+    :param language:Define with language use for run the test
+    :return:True
+    """
+    async with async_playwright() as p:
+        # Given: login to the CareLink dashboard
+        if all_browser == "webkit":
+            viewport = {'width': 1280, 'height': 1024}
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000)
+            context = await browser.new_context(viewport=viewport,ignore_https_errors=False)
+        else:
+            if all_browser in ["firefox", "chromium"]:
+                args = ["--start-maximized", "--kiosk"]
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000, args=args)
+            context = await browser.new_context(no_viewport=True, ignore_https_errors=False, )
+        page = await context.new_page()
+        await page.goto('https://stg-clinic-reports-dashboard.nutrino.co/')
+        await common_operation.login(page)
+        await page.click("//*[@id='root']/div/div[1]/div[1]/div/div/div")
+        languages_dict = common_operation.languages()
+        xpath_selector = languages_dict.get(language)
+        await page.click(xpath_selector, timeout=4000)
+        await page.wait_for_load_state("networkidle")
+        terms_of_use_links = await common_operation.term_of_use_link_all_languages(page)
+        terms_of_use_link_per_languege = terms_of_use_links[language]
+        await terms_of_use_link_per_languege.click()
+        context = browser.contexts[0]
+        pages = context.pages
+        new_page = pages[-1]
+        await asyncio.sleep(7)
+        actual_url = new_page.url
+        expected_url =expected_urls.get(language)
+        # Then: Verify that the system provides a ״terms of use״ of the Clinic Summary Report in all relevant languages
+        assert actual_url == expected_url, f"Expected URL: {expected_url}, Actual URL: {actual_url}"
+        titel_element = await new_page.query_selector("[class='text-center']")
+        titel_text = await new_page.evaluate('(element) => element.textContent', titel_element)
+        expected_title_text = expected_terms_text.get(language)
+        assert expected_title_text == titel_text
+        directory = os.path.join("term_of_use", f"{all_browser}_{language.lower()}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "term_of_use.jpg"))
+
+
