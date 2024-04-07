@@ -1,0 +1,39 @@
+
+expected_text_dashboard_english = """
+Clinic Reports DashboardYou need to enable JavaScript to run this app.Go backEnglishPen TestPTYour CareLink™ Clinic Summary ReportYour Clinic Summary Report provides an aggregate of key performance metrics across your clinic. Filter by device type and choose a 30, 60 or 90 day view.MiniMed™ 780G systemlast 30 daysmg/dLDownload a copy10* patients on MiniMed™ 780G systemTime range: last 30 daysfrom N/A to N/AMean hypos: &lt;70 mg/dL10 episodes (per day)Mean extreme hypos: &lt;54 mg/dL5 episodes (per day)*only patients with a minimum of 10 days of SG data with uploads in the selected periodGo to CareLink™ systemTo view individual patient insights.CareLink™ systemTerms of Use© 2024 Medtronic
+"""
+expected_text_dashboard_french ="""
+Clinic Reports DashboardYou need to enable JavaScript to run this app.RetourFrenchPen TestPTLe rapport CareLink™ synthétique de votre établissementVotre rapport synthétique  fournit les principales mesures de performance de votre établissement. Filtrez par type de système utilisé et choisissez une vue sur 30, 60 ou 90 jours.Système MiniMed™ 780G30 derniers joursmg/dLTélécharger une copie du rapport10* patients avec le Système MiniMed™ 780GPériode: 30 derniers joursdu N/A au N/AMoyenne des hypoglycémies : &lt;70 mg/dL10 épisodes (par jour)Moyenne des hypoglycémie sévères : &lt;54 mg/dL5 épisode (par jour)*Seulement les patients dont les données du capteur ont été téléchargées pendant au moins 10 jours au cours de la période sélectionnéeAccédez à CareLink™ systemVous recherchez des informations sur un patient en particulier?CareLink™ systemConditions d'utilisation© 2024 Medtronic
+
+"""
+expected_text_dashboard_spanish ="""
+Clinic Reports DashboardYou need to enable JavaScript to run this app.Ir atrásSpanishPen TestPTSu informe de resumen clínico de CareLink™Su informe de resumen clínico proporciona métricas de análisis de resultados clínicos de forma agregada. Filtre según el tipo de dispositivo y eliga el rango de tiempo de 30, 60 o 90 días.Sistema MiniMed™ 780GÚltimos 30 díasmg/dLDescargar una copia10* pacientes con el Sistema MiniMed™ 780GIntervalo de tiempo: últimos 30 díasdesde N/A hasta N/APromedio hipoglucemias: &lt;70 mg/dL10 episodios (por día)Promedio de hipoglucemias graves: &lt;54 mg/dL5 episodio (por día)*Solo pacientes con al menos 10 días de datos de glucosa del sensor en el período seleccionadoIr a Carelink™ system¿Quiere visualizar el resumen de datos individual para un paciente?Sistema CareLink™Condiciones de uso© 2024 Medtronic
+
+"""
+expected_text_dashboard_dutch ="""
+Clinic Reports DashboardYou need to enable JavaScript to run this app.Ga terugDutchPen TestPTCareLink™ klinisch overzichtsrapportHet CareLink™ klinisch overzichtsrapport  geeft een overzicht van de belangrijkste gegevens voor uw ziekenhuis. Filter op apparaattype en kies voor een weergave van 30, 60 of 90 dagen.MiniMed™ 780G-systeemAfgelopen 30 dagenmg/dLDownload een kopie10* patiënten op het MiniMed™ 780G-systeemPeriode: afgelopen 30 dagenN/A tot N/AGemiddelde hypo's: &lt;70 mg/dL10 keer per dagGemiddelde ernstige hypo's: &lt;54 mg/dL5 keer per dag*alleen patiënten met minimaal 10 dagen aan uploads met sensordata in de geselecteerde periodeGa naar Carelink™ SysteemOp zoek naar gegevens van een individuele patiënt?Carelink™ SysteemGebruiksvoorwaarden© 2024 Medtronic
+
+"""
+expected_text_dashboard_german ="""
+Clinic Reports DashboardYou need to enable JavaScript to run this app.ZurückGermanPen TestPTIhr zusammenfassender CareLink™ KlinikberichtIhr zusammenfassender Klinikbericht bietet eine Übersicht der wichtigsten Kennzahlen Ihrer Klinik. Filtern Sie nach Produkt und wählen Sie eine 30, 60 oder 90 Tage Ansicht.MiniMed™ 780G Systemletzten 30 Tagemg/dLKopie herunterladen10* Patient*innen mit dem MiniMed™ 780G SystemZeit im Zielbereich: letzte 30 Tagevom N/A bis N/AMittelwert Hypoglykämien &lt;70 mg/dL10 Episoden (pro Tag)Mittelwert Schwere Hypoglykämien  &lt;54 mg/dL5 Episode (pro Tag)*nur Patienten, bei denen im ausgewählten Zeitraum mindestens 10 Tage lang SG-Daten hochgeladen wurdenDann wechseln Sie zu CareLink™ SystemMöchten Sie einzelne Patient*innen Berichte einsehen?CareLink™ SystemNutzungsbedingungen© 2024 Medtronic
+
+"""
+
+expected_text_dashboard_italian ="""
+Clinic Reports DashboardYou need to enable JavaScript to run this app.IndietroItalianPen TestPTReport riassuntivo della clinica CareLink™Il tuo report riassuntivo della clinica fornisce le principali metriche di analisi degli outcome clinici in maniera aggregata. Filtra in base al tipo di dispositivo e scegli il range temporale a 30, 60, 90 giorni.Sistema MiniMed™ 780GUltimi 30 giornimg/dLScarica una copia del report10* pazienti con Sistema MiniMed™ 780GIntervallo temporale: ultimi 30 giornida N/A a N/AMedia ipoglicemie: &lt;70 mg/dL10 episodi (per giorno)Media ipoglicemie severe: &lt;54 mg/dL5 episodio (per giorno)*Solo pazienti con almeno 10 giorni di dati di glucosio sensore nel periodo selezionatoVai a CareLink™ systemVai alla Panoramica dati per singolo paziente.CareLink™ systemCondizioni d'uso© 2024 Medtronic
+
+"""
+
+
+
+
+expected_dashboar_text ={
+                "English": expected_text_dashboard_english ,
+                "French": expected_text_dashboard_french,
+                "Spanish": expected_text_dashboard_spanish,
+                "German": expected_text_dashboard_german,
+                "Dutch": expected_text_dashboard_dutch,
+                "Italian":expected_text_dashboard_italian
+            }
+
+
