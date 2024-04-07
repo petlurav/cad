@@ -1,0 +1,26 @@
+expected_urls={"English": "https://carelink.medtronic.eu/public/terms-of-use?language=en&country=gb",
+                "French": "https://carelink.medtronic.eu/public/terms-of-use?language=fr&country=fr",
+                "Spanish":"https://carelink.medtronic.eu/public/terms-of-use?language=es&country=es",
+                "Dutch":"https://carelink.medtronic.eu/public/terms-of-use?language=nl&country=nl" ,
+                "German":"https://carelink.medtronic.eu/public/terms-of-use?language=de&country=de",
+                "Italian":"https://carelink.medtronic.eu/public/terms-of-use?language=it&country=it" }
+
+
+
+
+expect_text_term_english = "Terms of Use"
+expect_text_term_french = "Conditions d'utilisation"
+expect_text_term_spanish ="Condiciones de uso"
+expect_text_term_dutch = "Gebruiksvoorwaarden"
+expect_text_term_german = "Nutzungsbedingungen"
+expect_text_term_italian = "Condizioni d'uso"
+
+expected_terms_text ={
+                "English": expect_text_term_english ,
+                "French": expect_text_term_french,
+                "Spanish":expect_text_term_spanish,
+                "Dutch":expect_text_term_dutch,
+                "German":expect_text_term_german,
+                "Italian":expect_text_term_italian
+
+}
