@@ -1,0 +1,248 @@
+import os
+import re
+import time
+import asyncio
+import urllib.parse
+from playwright.async_api import expect, async_playwright
+
+url = "https://stg-clinic-reports-dashboard.nutrino.co/"
+usrname = "cybersacept2"
+password = "D8@GsAeK5piG"
+
+
+async def login(page,timeout=30):
+        must_end = time.time() + timeout
+        while time.time() < must_end:
+            await page.goto(url)
+            safety_accept_button = page.locator("[class='MuiTypography-root MuiTypography-button css-14p066']")
+            await  safety_accept_button.click(timeout=50000)
+            if usrname == "cybersacept2" and password == "D8@GsAeK5piG":
+                await page.fill("#username", usrname)
+                await page.fill("#password", password)
+            else:
+                print(f"Got username {usrname}, Got the {password}")
+            await expect(page).to_have_title("Medtronic Login")
+            directory = os.path.join("login_main_screen", f"{usrname}_{password}")
+            os.makedirs(directory, exist_ok=True)
+            await page.screenshot(path=os.path.join(directory, "login_screen.jpg"))
+            current_url = page.url
+            expected_parsed_url = urllib.parse.urlparse("https://mdtlogin-stg.medtronic.com")
+            actual_parsed_url = urllib.parse.urlparse(current_url)
+            assert actual_parsed_url.netloc == expected_parsed_url.netloc, f"Expected domain: {expected_parsed_url.netloc}"
+            assert usrname == "cybersacept2" and password == "D8@GsAeK5piG", f"The username or password not correct {usrname}_{password}"
+            login_button = page.locator("#form-login-en > div.row-fluid > input")
+            await login_button.click(timeout=50000)
+            await asyncio.sleep(5)
+            await expect(page).to_have_url(url)
+            directory = os.path.join("login_main_screen")
+            os.makedirs(directory, exist_ok=True)
+            await page.screenshot(path=os.path.join(directory, "main_screen.jpg"))
+            break
+        return True
+
+
+def languages():
+    return  {
+        "English": "//*[@id='root']/div/div[1]/div[1]/div/div/div/div/p",
+        "French": "//*[@id='root']/div/div[1]/div[1]/div/div/div/fieldset/div/label[3]/span[2]",
+        "Spanish": "//*[@id='root']/div/div[1]/div[1]/div/div/div/fieldset/div/label[6]/span[2]",
+        "Dutch": "//*[@id='root']/div/div[1]/div[1]/div/div/div/fieldset/div/label[2]/span[2]",
+        "German": "//*[@id='root']/div/div[1]/div[1]/div/div/div/fieldset/div/label[4]/span[2]",
+        "Italian": "//*[@id='root']/div/div[1]/div[1]/div/div/div/fieldset/div/label[5]/span[2]"
+
+    }
+
+async def login_logout(page,timeout=30):
+    must_end = time.time() + timeout
+    while time.time() < must_end:
+        await page.goto(url)
+        safety_accept_button = page.locator("[class='MuiTypography-root MuiTypography-button css-14p066']")
+        await safety_accept_button .click(timeout=50000)
+        if usrname == "cybersacept2" and password == "D8@GsAeK5piG":
+            await page.fill("#username", usrname)
+            await page.fill("#password", "D8@GsAeK5piG")
+        else:
+            print(f"Got username {usrname}, Got the {password}")
+        await expect(page).to_have_title("Medtronic Login")
+        current_url = page.url
+        expected_parsed_url = urllib.parse.urlparse("https://mdtlogin-stg.medtronic.com")
+        actual_parsed_url = urllib.parse.urlparse(current_url)
+        assert actual_parsed_url.netloc == expected_parsed_url.netloc, f"Expected domain: {expected_parsed_url.netloc}, Actual domain: {actual_parsed_url.netloc}"
+        directory = os.path.join("login_logout", f"{usrname}_{password}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "login_screen.jpg"))
+        assert usrname == "cybersacept2" and password == "D8@GsAeK5piG", f"The username or password not correct{usrname},{password}"
+        await asyncio.sleep(5)
+        login_button = page.locator("#form-login-en > div.row-fluid > input")
+        await login_button.click(timeout=50000)
+        await asyncio.sleep(5)
+        await expect(page).to_have_url(url)
+        back_button = page.locator("//*[@id='root']/div/div[1]/div[1]/button/div")
+        await back_button.click(timeout=50000)
+        safety_accept_button = page.locator("[class='MuiTypography-root MuiTypography-button css-14p066']")
+        await  safety_accept_button.click(timeout=50000)
+        await asyncio.sleep(5)
+        await page.fill("#username", "test")
+        await page.fill("#password", "D8@GsAeK5piG")
+        await page.click("#form-login-en > div.row-fluid > input", timeout=50000)
+        await asyncio.sleep(5)
+        expected_error = "Invalid username or password"
+        error_element = await page.query_selector("//*[@id='error']")
+        actual_error = await page.evaluate('(element) => element.textContent', error_element)
+        assert actual_error.strip() == expected_error.strip()
+        directory = os.path.join("error", f"{expected_error}_{actual_error}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "error_screen.jpg"))
+    return True
+
+
+async def logout(page,timeout=30):
+    must_end = time.time() + timeout
+    while time.time() < must_end:
+        await page.goto(url)
+        safety_accept_button = page.locator("[class='MuiTypography-root MuiTypography-button css-14p066']")
+        await safety_accept_button.click(timeout=50000)
+        if usrname == "cybersacept2" and password == "D8@GsAeK5piG":
+            await page.fill("#username", usrname)
+            await page.fill("#password", "D8@GsAeK5piG")
+        else:
+            print(f"Got username {usrname}, Got the {password}")
+        await expect(page).to_have_title("Medtronic Login")
+        current_url = page.url
+        expected_parsed_url = urllib.parse.urlparse("https://mdtlogin-stg.medtronic.com")
+        actual_parsed_url = urllib.parse.urlparse(current_url)
+        assert actual_parsed_url.netloc == expected_parsed_url.netloc, f"Expected domain: {expected_parsed_url.netloc}, Actual domain: {actual_parsed_url.netloc}"
+        await expect(page).to_have_title("Medtronic Login")
+        directory = os.path.join("login", f"{usrname}_{password}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "login_screen.jpg"))
+        assert usrname == "cybersacept2" and password == "D8@GsAeK5piG", f"The username or password not correct{usrname},{password}"
+        await asyncio.sleep(5)
+        login_button= page.locator('[class="input sign-in btn btn-primary"]')
+        await login_button.click(timeout=50000)
+        await asyncio.sleep(10)
+        back_button = page.locator("//*[@id='root']/div/div[1]/div[1]/button/div")
+        await back_button.click(timeout=50000)
+        directory = os.path.join("logout")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "safety_screen.jpg"))
+        break
+
+
+def dashboard_text():
+    return {
+
+        "english_your":"//*[@id='root']/div/div[1]/div[2]/h1",
+        "english_aggregate":"//*[@id='root']/div/div[1]/div[2]/p"
+    }
+
+
+async def term_of_use_link_all_languages(page):
+
+    return {
+        "English": page.get_by_role('link', name="Terms of Use"),
+        "French": page.get_by_role('link', name="Conditions d'utilisation"),
+        "Spanish":page.get_by_role('link', name="Condiciones de uso"),
+        "Dutch":page.get_by_role('link', name="Gebruiksvoorwaarden"),
+        "German":page.get_by_role('link', name="Nutzungsbedingungen"),
+        "Italian":page.get_by_role('link', name="Condizioni d'uso"),
+    }
+
+
+class BrowserContextManager:
+    def __init__(self, all_browser):
+        self.all_browser = all_browser
+        self.page = None
+        self.browser = None
+        self.context = None
+
+    async def __aenter__(self):
+        self.page, self.browser, self.context = await launch_browser(self.all_browser)
+        return self.page, self.browser
+
+    async def __aexit__(self, exc_type, exc, tb):
+        if self.page:
+            await self.page.close()
+        if self.context:
+            await self.context.close()
+        if self.browser:
+            await self.browser.close()
+
+async def launch_browser(all_browser):
+    async with async_playwright() as p:
+        if all_browser == "webkit":
+            viewport = {'width': 1280, 'height': 1024}
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000)
+            context = await browser.new_context(viewport=viewport, ignore_https_errors=False)
+        else:
+            if all_browser in ["firefox", "chromium"]:
+                args = ["--start-maximized", "--kiosk"]
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000, args=args)
+            context = await browser.new_context(no_viewport=True, ignore_https_errors=False)
+        page = await context.new_page()
+        await page.goto('https://stg-clinic-reports-dashboard.nutrino.co/')
+        await login(page)
+        return page, browser, context
+
+
+def extract_date_range(text,language):
+
+    date_range_pattern = {
+        "English": r'from (\d{2}/\d{2}/\d{4}) to (\d{2}/\d{2}/\d{4})',
+        "French":  r'du (\d{2}/\d{2}/\d{4}) au (\d{2}/\d{2}/\d{4})',
+        "Spanish": r'desde (\d{2}/\d{2}/\d{4}) hasta (\d{2}/\d{2}/\d{4})',
+        "Dutch":   r'(\d{2}/\d{2}/\d{4}) tot (\d{2}/\d{2}/\d{4})',
+        "German":  r'vom (\d{2}/\d{2}/\d{4}) bis (\d{2}/\d{2}/\d{4})',
+        "Italian":  r'da (\d{2}/\d{2}/\d{4}) a (\d{2}/\d{2}/\d{4})'
+
+
+    }
+    pattern = date_range_pattern.get(language)
+
+    if pattern:
+        print("Pattern:", pattern)
+        date_ranges = re.findall(pattern, text)
+        print("Matched date ranges:", date_ranges)
+        return date_ranges
+    else:
+        # Return an empty list if the language is not supported
+        return []
+
+
+async def dashboard_actual_result(page, language):
+    page_content = await page.content()
+    actual_text_normalized = re.sub(r'<[^>]*>', '', page_content)
+    actual_text_normalized = re.sub(r'\s+', ' ', actual_text_normalized).strip()
+    date_ranges = extract_date_range(actual_text_normalized, language)
+    print("Matched date ranges before replacement:", date_ranges)
+    for start_date, end_date in date_ranges:
+        if language == "English":
+            actual_text_normalized = actual_text_normalized.replace(
+                f"from {start_date} to {end_date}", "from N/A to N/A"
+            )
+        elif language == "French":
+            actual_text_normalized = actual_text_normalized.replace(
+                f"du {start_date} au {end_date}", "du N/A au N/A"
+            )
+        elif language == "Spanish":
+            actual_text_normalized = actual_text_normalized.replace(
+                f"desde {start_date} hasta {end_date}", "desde N/A hasta N/A"
+            )
+
+        elif language == "Dutch":
+            actual_text_normalized = actual_text_normalized.replace(
+                f"{start_date} tot {end_date}", "N/A tot N/A"
+            )
+
+        elif language == "German":
+            actual_text_normalized = actual_text_normalized.replace(
+                f"vom {start_date} bis {end_date}", "vom N/A bis N/A"
+            )
+        elif language == "Italian":
+            actual_text_normalized = actual_text_normalized.replace(
+                f"da {start_date} a {end_date}", "da N/A a N/A"
+            )
+        else:
+            print("Unsupported language:", language)
+
+    return actual_text_normalized
