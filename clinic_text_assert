@@ -247,3 +247,43 @@ async def test_terms_of_use_all_languages(language, all_browser):
         await page.screenshot(path=os.path.join(directory, "term_of_use.jpg"))
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("all_browser", ["chromium", "firefox", "webkit"])
+@pytest.mark.xrayjira(test_key="CAD-600")
+async def test_right_order_of_languages(all_browser):
+    """
+    Verify that the order of the language picker is set by 'ABC' letters
+    :param all_browser:Define with browser use for run the test
+    :param language:Define with language use for run the test
+    :return:True
+    """
+    async with async_playwright() as p:
+     with Given()
+        ogi# Given: ln to the CareLink dashboard
+        if all_browser == "webkit":
+            viewport = {'width': 1280, 'height': 1024}
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000)
+            context = await browser.new_context(viewport=viewport,ignore_https_errors=False)
+        else:
+            if all_browser in["chromium","firefox"]:
+                args = ["--start-maximized","--kiosk"]
+            browser = await getattr(p, all_browser).launch(headless=False, slow_mo=1000, args=args)
+            context = await browser.new_context(no_viewport=True, ignore_https_errors=False,)
+        page = await context.new_page()
+        await page.goto('https://stg-clinic-reports-dashboard.nutrino.co/')
+        await common_operation.login(page)
+        language_picker = await page.query_selector("//*[@id='root']/div/div[1]/div[1]/div/div/div")
+        await language_picker.click(timeout=10000)
+        await asyncio.sleep(5)
+        language_picker = await page.query_selector("//*[@id='root']/div/div[1]/div[1]/div/div[1]/div/fieldset")
+        language_options = await language_picker.query_selector_all("label")
+        actual_languages = []
+        for option in language_options:
+            text_content = await option.text_content()
+            actual_languages.append(text_content.strip())
+        expected_languages_order = ['English', 'Dutch', 'French', 'German', 'Italian', 'Spanish']
+        assert actual_languages == expected_languages_order
+        directory = os.path.join("ABC language order", f"{all_browser}")
+        os.makedirs(directory, exist_ok=True)
+        await page.screenshot(path=os.path.join(directory, "ABC language order.jpg"))
+
